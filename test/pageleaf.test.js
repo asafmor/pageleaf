@@ -130,3 +130,10 @@ test('the executable generates HTML end to end', async () => {
     assert.match(await readFile(path.join(root, 'guide.html'), 'utf8'), /# Guide/);
   });
 });
+
+test('the executable reports the package version', async () => {
+  const packageMetadata = JSON.parse(await readFile(path.join(projectRoot, 'package.json'), 'utf8'));
+  const { stdout } = await execFileAsync(process.execPath, [path.join(projectRoot, 'bin', 'pageleaf.js'), '--version']);
+
+  assert.equal(stdout.trim(), packageMetadata.version);
+});
