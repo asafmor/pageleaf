@@ -1,2 +1,5 @@
 .serena/
 .claude/
+dist/
+node_modules/
+*.tgz

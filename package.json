@@ -1,0 +1,42 @@
+{
+  "name": "pageleaf",
+  "version": "0.1.0",
+  "description": "Turn text files into a navigable, single-file documentation site.",
+  "type": "module",
+  "bin": {
+    "pageleaf": "bin/pageleaf.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "lib/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build:template": "node scripts/build-template.mjs",
+    "test": "npm run build:template && node --test",
+    "prepack": "npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asafmor/pageleaf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/asafmor/pageleaf/issues"
+  },
+  "homepage": "https://github.com/asafmor/pageleaf#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "markdown",
+    "documentation",
+    "static-site",
+    "cli"
+  ],
+  "license": "MIT"
+}
