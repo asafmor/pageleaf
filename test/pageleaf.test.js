@@ -98,6 +98,17 @@ test('the generated header uses the linked document H1 as its only brand', async
   assert.doesNotMatch(template, /Pageleaf home|pageleaf<\/a>|class="leaf"|flaticon\.com/);
 });
 
+test('the generated theme selector is polished without a visible label', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  assert.match(template, /<div class="theme-picker"><select id="theme" aria-label="Choose theme">/);
+  assert.doesNotMatch(template, /<label[^>]*for="theme"[^>]*>Theme<\/label>/);
+  assert.match(template, /\.theme-picker\{[^}]*position:relative[^}]*\}/);
+  assert.match(template, /\.theme-picker::after\{[^}]*content:"⌄"[^}]*pointer-events:none[^}]*\}/);
+  assert.match(template, /\.theme-picker select\{[^}]*appearance:none[^}]*background:var\(--surface\)[^}]*border:1px solid var\(--line\)[^}]*box-shadow:var\(--shadow\)[^}]*\}/);
+  assert.match(template, /\.theme-picker select:focus-visible\{[^}]*outline:3px solid var\(--accent\)[^}]*outline-offset:3px[^}]*\}/);
+});
+
 test('CLI parsing validates positionals, themes, and empty titles', () => {
   assert.equal(parseCommandLine(['guide.md', '--theme', 'grove']).values.theme, 'grove');
   assert.throws(() => parseCommandLine([]), UsageError);
