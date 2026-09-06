@@ -136,6 +136,7 @@ test('the generated template uses theme-local colors for navigation scrollbars a
   assert.match(template, /\.primary\{[^}]*scrollbar-color:var\(--nav-scroll-thumb\) var\(--nav-scroll-track\)[^}]*\}/);
   assert.match(template, /\.primary::-webkit-scrollbar-track\{background:var\(--nav-scroll-track\)\}/);
   assert.match(template, /\.primary::-webkit-scrollbar-thumb\{background:var\(--nav-scroll-thumb\)[^}]*border:2px solid var\(--nav-scroll-track\)\}/);
+  assert.match(template, /\.primary::-webkit-scrollbar-button\{display:none;width:0;height:0\}/);
   assert.doesNotMatch(template, /@media\(min-width:701px\)\{\.primary\{scrollbar-color/);
   assert.match(template, /\*\{scrollbar-color:var\(--scroll-thumb\) var\(--scroll-track\)\}/);
   assert.match(template, /\*::-webkit-scrollbar-track\{background:var\(--scroll-track\)\}/);
