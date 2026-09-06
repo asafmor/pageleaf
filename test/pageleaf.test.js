@@ -18,6 +18,21 @@ import {
 const execFileAsync = promisify(execFile);
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const templatePath = path.join(projectRoot, 'dist', 'template.html');
+const themeNames = ['paper', 'midnight', 'grove', 'ocean', 'contrast'];
+
+function themeTokens(template, theme) {
+  const selector = theme === 'paper' ? ':root' : `[data-theme="${theme}"]`;
+  const start = template.indexOf(`${selector}{`);
+  assert.notEqual(start, -1, `missing ${theme} theme definition`);
+  const end = template.indexOf('}', start);
+  assert.notEqual(end, -1, `unterminated ${theme} theme definition`);
+  return Object.fromEntries(
+    template.slice(start + selector.length + 1, end)
+      .split(';')
+      .map((declaration) => declaration.trim().split(':'))
+      .filter(([name, value]) => name?.startsWith('--') && value)
+  );
+}
 
 async function withTemporaryDirectory(run) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'pageleaf-test-'));
@@ -69,6 +84,27 @@ test('embedding selects a theme and protects the script boundary', () => {
   assert.match(html, /data-theme="ocean"/);
   assert.match(html, /&lt;\/script><p>/);
   assert.doesNotMatch(html, />old<\/script>/);
+});
+
+test('the generated template keeps five distinct, complete reading theme contracts', async () => {
+  const template = await readFile(templatePath, 'utf8');
+  const optionValues = [...template.matchAll(/<option value="([^"]+)"/g)].map((match) => match[1]);
+  const requiredTokens = [
+    '--bg', '--surface', '--text', '--muted', '--line', '--accent', '--soft', '--code',
+    '--title-font', '--body-font', '--body-size', '--body-leading', '--radius',
+    '--header-height', '--quote-rule', '--table-head'
+  ];
+
+  assert.deepEqual(optionValues, themeNames);
+  const signatures = themeNames.map((theme) => {
+    const tokens = themeTokens(template, theme);
+    for (const token of requiredTokens) assert.ok(tokens[token], `${theme} defines ${token}`);
+    return requiredTokens.map((token) => tokens[token]).join('|');
+  });
+  assert.equal(new Set(signatures).size, themeNames.length, 'each theme has a distinct visual contract');
+  assert.match(template, /body\{[^}]*font:var\(--body-size\)\/var\(--body-leading\) var\(--body-font\)/);
+  assert.match(template, /\.article blockquote\{[^}]*border-inline-start:var\(--quote-rule\)/);
+  assert.match(template, /\.article th\{[^}]*background:var\(--table-head\)/);
 });
 
 test('the generated template uses theme-local colors for navigation scrollbars at every viewport width', async () => {
