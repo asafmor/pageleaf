@@ -92,7 +92,7 @@ test('the generated template keeps five distinct, complete reading theme contrac
   const requiredTokens = [
     '--bg', '--surface', '--text', '--muted', '--line', '--accent', '--soft', '--code',
     '--title-font', '--body-font', '--body-size', '--body-leading', '--radius',
-    '--header-height', '--quote-rule', '--table-head'
+    '--header-height', '--quote-rule', '--table-head', '--scroll-track', '--scroll-thumb'
   ];
 
   assert.deepEqual(optionValues, themeNames);
@@ -107,6 +107,25 @@ test('the generated template keeps five distinct, complete reading theme contrac
   assert.match(template, /\.article th\{[^}]*background:var\(--table-head\)/);
 });
 
+test('the generated template preserves the selected palettes and hosted font pairings', async () => {
+  const template = await readFile(templatePath, 'utf8');
+  const expected = {
+    paper: ['#f4efe6', 'Literata,Georgia,serif', '"Atkinson Hyperlegible",Arial,sans-serif', '#e7dbcb', '#9c7256', '#f8f1e7', '#e7d9c6'],
+    midnight: ['#0b0d16', 'Chivo,Arial,sans-serif', '"IBM Plex Sans",Arial,sans-serif', '#191d2c', '#697899', '#0f1220', '#30374d'],
+    grove: ['#f8faf4', 'Alegreya,Georgia,serif', '"Work Sans",Arial,sans-serif', '#dfe8da', '#6f896b', '#e6eee0', '#c4d1bf'],
+    ocean: ['#fafcff', 'Archivo,Arial,sans-serif', 'Manrope,Arial,sans-serif', '#d7dfeb', '#607a9a', '#dfe8f5', '#c0cde0']
+  };
+
+  for (const [theme, values] of Object.entries(expected)) {
+    const tokens = themeTokens(template, theme);
+    assert.deepEqual(
+      ['--bg', '--title-font', '--body-font', '--scroll-track', '--scroll-thumb', '--nav-scroll-track', '--nav-scroll-thumb'].map((token) => tokens[token]),
+      values,
+    );
+  }
+  assert.match(template, /fonts\.googleapis\.com\/css2\?family=Alegreya[^>]*family=Work\+Sans/);
+});
+
 test('the generated template uses theme-local colors for navigation scrollbars at every viewport width', async () => {
   const template = await readFile(templatePath, 'utf8');
 
@@ -118,6 +137,24 @@ test('the generated template uses theme-local colors for navigation scrollbars a
   assert.match(template, /\.primary::-webkit-scrollbar-track\{background:var\(--nav-scroll-track\)\}/);
   assert.match(template, /\.primary::-webkit-scrollbar-thumb\{background:var\(--nav-scroll-thumb\)[^}]*border:2px solid var\(--nav-scroll-track\)\}/);
   assert.doesNotMatch(template, /@media\(min-width:701px\)\{\.primary\{scrollbar-color/);
+  assert.match(template, /\*\{scrollbar-color:var\(--scroll-thumb\) var\(--scroll-track\)\}/);
+  assert.match(template, /\*::-webkit-scrollbar-track\{background:var\(--scroll-track\)\}/);
+  assert.match(template, /\*::-webkit-scrollbar-thumb\{background:var\(--scroll-thumb\)[^}]*border:3px solid var\(--scroll-track\)/);
+});
+
+test('theme-specific navigation and corner treatments stay intentional', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  assert.match(template, /\.primary\{align-items:flex-end\}/);
+  assert.match(template, /\.primary a\{padding:9px 0\}/);
+  assert.match(template, /\[data-theme="paper"\] \.header\{border-bottom:1px solid var\(--line\);box-shadow:none\}/);
+  assert.match(template, /\[data-theme="paper"\] \.page-title\{font-style:normal\}/);
+  assert.match(template, /\[data-theme="ocean"\] \.header\{border-bottom:1px solid var\(--line\)\}/);
+  assert.match(template, /\[data-theme="grove"\] \.sidebar a\[aria-current\]\{box-shadow:none\}/);
+  assert.match(
+    template,
+    /:is\(\[data-theme="midnight"\],\[data-theme="ocean"\]\) :is\([^}]*\.article blockquote[^}]*\.article table[^}]*\)\{border-radius:var\(--radius\)\}/,
+  );
 });
 
 test('the generated template constrains header content to the site frame', async () => {
