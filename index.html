@@ -14,6 +14,8 @@
 /* Wide documents: tables can breathe while normal paragraphs retain a readable measure. */
 .article-wrap{max-width:var(--article-frame)}
 .article p,.article>ul,.article>ol,.article>blockquote,.article>pre{max-width:var(--measure)}
+/* Keep header controls aligned with the centered content frame on wide screens. */
+.masthead,.primary{max-width:1600px;margin:auto}
 @media(min-width:701px){.primary{scrollbar-color:var(--nav-scroll-thumb) var(--nav-scroll-track)}.primary::-webkit-scrollbar-track{background:var(--nav-scroll-track)}.primary::-webkit-scrollbar-thumb{background:var(--nav-scroll-thumb);border-color:var(--nav-scroll-track)}}
 @media(min-width:1600px){.layout{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 @media(max-width:1199px){.layout{grid-template-columns:220px minmax(0,1fr)}.toc{display:none}.mobile-toc{display:block;border:1px solid var(--line);border-radius:var(--radius);padding:12px 17px;margin-bottom:28px;font-size:13px}.mobile-toc a{display:block;padding:4px 0}.mobile-toc summary{cursor:pointer;color:var(--muted)}}

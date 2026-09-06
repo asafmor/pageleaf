@@ -71,6 +71,12 @@ test('embedding selects a theme and protects the script boundary', () => {
   assert.doesNotMatch(html, />old<\/script>/);
 });
 
+test('the generated template constrains header content to the site frame', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  assert.match(template, /\.masthead,\.primary\{max-width:1600px;margin:auto\}/);
+});
+
 test('CLI parsing validates positionals, themes, and empty titles', () => {
   assert.equal(parseCommandLine(['guide.md', '--theme', 'grove']).values.theme, 'grove');
   assert.throws(() => parseCommandLine([]), UsageError);
