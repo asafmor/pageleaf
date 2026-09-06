@@ -5,6 +5,7 @@ Turn a text file or folder of text files into a navigable, single-file HTML site
 ```bash
 npx pageleaf guide.md
 npx pageleaf ./docs --title "Project manual" --theme grove
+npx pageleaf ./docs --layout sidebar
 npx pageleaf notes.txt --out ./public --open
 ```
 
@@ -16,6 +17,7 @@ Requires Node.js 20 or newer.
 | --- | --- |
 | `--title <text>` | Override the site title |
 | `--theme <name>` | Use `paper`, `midnight`, `grove`, `ocean`, or `contrast` |
+| `--layout <name>` | Use `standard` (the default horizontal section navigation plus page sidebar) or `sidebar` (a single left hierarchy with non-clickable section groups and page links) |
 | `--out <folder>` | Choose the output folder |
 | `--open` | Open the generated site |
 | `--force` | Replace an existing output file |

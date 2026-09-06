@@ -109,13 +109,39 @@ test('the generated theme selector is polished without a visible label', async (
   assert.match(template, /\.theme-picker select:focus-visible\{[^}]*outline:3px solid var\(--accent\)[^}]*outline-offset:3px[^}]*\}/);
 });
 
-test('CLI parsing validates positionals, themes, and empty titles', () => {
+test('CLI parsing validates positionals, themes, layouts, and empty titles', () => {
   assert.equal(parseCommandLine(['guide.md', '--theme', 'grove']).values.theme, 'grove');
+  assert.equal(parseCommandLine(['guide.md']).values.layout, 'standard');
+  assert.equal(parseCommandLine(['guide.md', '--layout', 'sidebar']).values.layout, 'sidebar');
   assert.throws(() => parseCommandLine([]), UsageError);
   assert.throws(() => parseCommandLine(['a', 'b']), /exactly one input/);
   assert.throws(() => parseCommandLine(['a', '--theme', 'purple']), /Unknown theme/);
+  assert.throws(() => parseCommandLine(['a', '--layout', 'stacked']), /Unknown layout "stacked"\. Choose one of: standard, sidebar/);
   assert.throws(() => parseCommandLine(['a', '--title', '   ']), /visible text/);
   assert.throws(() => parseCommandLine(['a', '--out', '   ']), /Output folder/);
+});
+
+test('the generated template supports standard and sidebar layouts', async () => {
+  const template = await readFile(templatePath, 'utf8');
+  const standard = embedDocument(template, '# Guide\n\n## Getting started\n\n### Install\n\nText.', 'paper', 'standard');
+  const sidebar = embedDocument(template, '# Guide\n\n## Getting started\n\n### Install\n\nText.', 'paper', 'sidebar');
+
+  assert.match(standard, /<html lang="en" data-theme="paper" data-layout="standard">/);
+  assert.match(sidebar, /<html lang="en" data-theme="paper" data-layout="sidebar">/);
+  assert.match(template, /data-layout="standard"/);
+  assert.match(template, /dataset\.layout==='sidebar'/);
+  assert.match(template, /\$\('primary'\)\.hidden=sidebarLayout;/);
+  assert.match(template, /sidebar-group-title.*section\.title/);
+  assert.match(template, /\.sidebar-group/);
+  assert.match(template, /\.sidebar-group-title/);
+  assert.match(template, /\.sidebar-layout \.sidebar/);
+});
+
+test('sidebar layout keeps section groups useful when they contain overview pages', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  assert.match(template, /section\.pages\.map\(p=>this\.link\(p,p\.title,page\)\)\.join\(''\)/);
+  assert.match(template, /section\.pages\.length>1\?section\.pages\.map/);
 });
 
 test('generation supports folders, sorting, filtering, output protection, and force', async () => {
@@ -159,13 +185,20 @@ test('generation accepts absolute files and rejects binary direct input', async 
   });
 });
 
-test('the executable generates HTML end to end', async () => {
+test('the executable generates standard and sidebar layout HTML end to end', async () => {
   await withTemporaryDirectory(async (root) => {
     const input = path.join(root, 'guide.md');
-    await writeFile(input, '# Guide\n\n## Start\n\nWelcome.');
-    const { stdout } = await execFileAsync(process.execPath, [path.join(projectRoot, 'bin', 'pageleaf.js'), input], { cwd: root });
+    const executable = path.join(projectRoot, 'bin', 'pageleaf.js');
+    await writeFile(input, '# Guide\n\n## Start\n\n### Install\n\nWelcome.');
+    const { stdout } = await execFileAsync(process.execPath, [executable, input], { cwd: root });
     assert.match(stdout, /Created .*guide\.html/);
-    assert.match(await readFile(path.join(root, 'guide.html'), 'utf8'), /# Guide/);
+    assert.match(await readFile(path.join(root, 'guide.html'), 'utf8'), /data-layout="standard"/);
+
+    const sidebarOutput = path.join(root, 'sidebar');
+    await execFileAsync(process.execPath, [executable, input, '--layout', 'sidebar', '--out', sidebarOutput], { cwd: root });
+    const sidebarHtml = await readFile(path.join(sidebarOutput, 'guide.html'), 'utf8');
+    assert.match(sidebarHtml, /data-layout="sidebar"/);
+    assert.match(sidebarHtml, /sidebar-group-title/);
   });
 });
 
@@ -174,4 +207,17 @@ test('the executable reports the package version', async () => {
   const { stdout } = await execFileAsync(process.execPath, [path.join(projectRoot, 'bin', 'pageleaf.js'), '--version']);
 
   assert.equal(stdout.trim(), packageMetadata.version);
+});
+
+test('the executable documents layouts and rejects invalid layout values', async () => {
+  const executable = path.join(projectRoot, 'bin', 'pageleaf.js');
+  const { stdout } = await execFileAsync(process.execPath, [executable, '--help']);
+  assert.match(stdout, /--layout <name>\s+Navigation layout: standard, sidebar \(default: standard\)/);
+
+  await assert.rejects(
+    () => execFileAsync(process.execPath, [executable, 'guide.md', '--layout', 'stacked']),
+    (error) => /Unknown layout "stacked"\. Choose one of: standard, sidebar\./.test(error.stderr)
+      && /Run "pageleaf --help" for usage\./.test(error.stderr)
+      && error.code === 2
+  );
 });

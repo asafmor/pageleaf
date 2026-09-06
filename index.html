@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="paper">
+<html lang="en" data-theme="paper" data-layout="standard">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pageleaf</title>
@@ -16,6 +16,7 @@
 .article p,.article>ul,.article>ol,.article>blockquote,.article>pre{max-width:var(--measure)}
 /* Keep header controls aligned with the centered content frame on wide screens. */
 .masthead,.primary{max-width:1600px;margin:auto}
+.sidebar-group{margin:0 0 20px}.sidebar-group-title{margin:0;padding:8px 12px 4px;color:var(--text);font-size:12px;line-height:1.45;font-weight:700}.sidebar-group a{margin:1px 0 1px 10px}.sidebar-layout .sidebar{padding-top:28px}
 
 @media(min-width:1600px){.layout{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 @media(max-width:1199px){.layout{grid-template-columns:220px minmax(0,1fr)}.toc{display:none}.mobile-toc{display:block;border:1px solid var(--line);border-radius:var(--radius);padding:12px 17px;margin-bottom:28px;font-size:13px}.mobile-toc a{display:block;padding:4px 0}.mobile-toc summary{cursor:pointer;color:var(--muted)}}
@@ -868,14 +869,14 @@ class DocumentViewer {
  constructor(model,renderer){this.model=model;this.renderer=renderer;this.router=new HashRouter(model,(...args)=>this.render(...args));this.observer=null;}
  link(page,label,current){return `<a href="${page.route}"${page===current?' aria-current="page"':''}>${escapeHTML(label)}</a>`;}
  start(){
-  const homePage=this.model.pages[0];$('document-title').textContent=this.model.title;$('document-title').href=homePage.route;if('ResizeObserver'in window)new ResizeObserver(entries=>document.documentElement.style.setProperty('--header',entries[0].target.offsetHeight+'px')).observe(document.querySelector('.header'));$('status').hidden=true;$('layout').hidden=false;
+  const homePage=this.model.pages[0];$('document-title').textContent=this.model.title;$('document-title').href=homePage.route;const sidebarLayout=document.documentElement.dataset.layout==='sidebar';$('primary').hidden=sidebarLayout;document.documentElement.classList.toggle('sidebar-layout',sidebarLayout);$('secondary').setAttribute('aria-label',sidebarLayout?'Document navigation':'Pages');if('ResizeObserver'in window)new ResizeObserver(entries=>document.documentElement.style.setProperty('--header',entries[0].target.offsetHeight+'px')).observe(document.querySelector('.header'));$('status').hidden=true;$('layout').hidden=false;
   $('menu').onclick=()=>$('drawer').showModal();$('close-menu').onclick=()=>$('drawer').close();$('drawer').addEventListener('click',e=>{if(e.target===$('drawer')){const r=$('drawer').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('drawer').close();}if(e.target.closest('a'))$('drawer').close();});
   window.addEventListener('beforeprint',()=>{$('print-content').innerHTML=`<h1>${escapeHTML(this.model.title)}</h1>`+this.model.sections.map(s=>`<section><h2>${escapeHTML(s.title)}</h2>${s.pages.map(p=>`<article><h3>${escapeHTML(p.title)}</h3>${this.renderer.render(p)}</article>`).join('')}</section>`).join('');});window.addEventListener('afterprint',()=>{$('print-content').replaceChildren();});this.router.start();
  }
  render(page,anchor,initial){
   const s=page.section;document.title=page.title+' · '+this.model.title+' | Pageleaf';
   $('primary').innerHTML=this.model.sections.map(section=>`<a href="${(this.router.lastPages.get(section.slug)||section.pages[0]).route}"${section===s?' aria-current="true"':''}>${escapeHTML(section.title)}</a>`).join('');
-  $('secondary').innerHTML=s.pages.map(p=>this.link(p,p.title,page)).join('');
+  const sidebarLayout=document.documentElement.dataset.layout==='sidebar';$('secondary').innerHTML=sidebarLayout?this.model.sections.map(section=>`<section class="sidebar-group"><h3 class="sidebar-group-title">${escapeHTML(section.title)}</h3>${section.pages.length>1?section.pages.map(p=>this.link(p,p.title,page)).join(''):this.link(section.pages[0],section.pages[0].kind==='overview'?'Overview':section.pages[0].title,page)}</section>`).join(''):s.pages.map(p=>this.link(p,p.title,page)).join('');
   $('mobile-nav').innerHTML=this.model.sections.map(section=>`<h3>${escapeHTML(section.title)}</h3>${section.pages.map(p=>this.link(p,p.title,page)).join('')}`).join('');
   $('page-title').textContent=page.title;
   $('article').innerHTML=this.renderer.render(page);enhanceContent($('article'));
