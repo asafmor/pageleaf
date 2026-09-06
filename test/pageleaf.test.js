@@ -104,7 +104,8 @@ test('the generated theme selector is polished without a visible label', async (
   assert.match(template, /<div class="theme-picker"><select id="theme" aria-label="Choose theme">/);
   assert.doesNotMatch(template, /<label[^>]*for="theme"[^>]*>Theme<\/label>/);
   assert.match(template, /\.theme-picker\{[^}]*position:relative[^}]*\}/);
-  assert.match(template, /\.theme-picker::after\{[^}]*content:"⌄"[^}]*pointer-events:none[^}]*\}/);
+  assert.doesNotMatch(template, /\.theme-picker::after\{[^}]*content:"⌄"/);
+  assert.match(template, /\.theme-picker::after\{[^}]*content:""[^}]*width:7px[^}]*height:7px[^}]*border-right:2px solid var\(--accent\)[^}]*border-bottom:2px solid var\(--accent\)[^}]*transform:translateY\(-2px\) rotate\(45deg\)[^}]*pointer-events:none[^}]*\}/);
   assert.match(template, /\.theme-picker select\{[^}]*appearance:none[^}]*background:var\(--surface\)[^}]*border:1px solid var\(--line\)[^}]*box-shadow:var\(--shadow\)[^}]*\}/);
   assert.match(template, /\.theme-picker select:focus-visible\{[^}]*outline:3px solid var\(--accent\)[^}]*outline-offset:3px[^}]*\}/);
 });
