@@ -160,7 +160,7 @@ test('theme-specific navigation and corner treatments stay intentional', async (
 test('the generated template constrains header content to the site frame', async () => {
   const template = await readFile(templatePath, 'utf8');
 
-  assert.match(template, /\.masthead,\.primary\{max-width:1600px;margin:auto\}/);
+  assert.match(template, /\.masthead,\.primary-container\{max-width:1600px;margin:auto\}/);
 });
 
 test('the generated header uses the linked document H1 as its only brand', async () => {

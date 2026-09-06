@@ -24,7 +24,8 @@
 .article-wrap{max-width:var(--article-frame)}
 .article p,.article>ul,.article>ol,.article>blockquote,.article>pre{max-width:var(--measure)}
 /* Keep header controls aligned with the centered content frame on wide screens. */
-.masthead,.primary{max-width:1600px;margin:auto}
+.masthead,.primary-container{max-width:1600px;margin:auto}
+.primary-container{padding:0 22px}.primary-container .primary{padding:0}.sidebar-layout .primary-container{display:none}
 .sidebar-group{margin:0 0 20px}.sidebar-group-title{margin:0;padding:8px 12px 4px;color:var(--text);font-size:12px;line-height:1.45;font-weight:700}.sidebar-group a{margin:1px 0 1px 10px}.sidebar-layout .sidebar{padding-top:28px}
 
 @media(min-width:1600px){.layout{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
@@ -38,7 +39,7 @@
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="header"><div class="masthead"><h1 class="doc-title"><a id="document-title" href="#/"></a></h1><div class="tools"><div class="theme-picker"><select id="theme" aria-label="Choose theme"><option value="paper">Paper</option><option value="midnight">Midnight</option><option value="grove">Grove</option><option value="ocean">Ocean</option><option value="contrast">High contrast</option></select></div><button class="menu-button" id="menu" aria-label="Open document navigation">☰</button></div></div><nav id="primary" class="primary" aria-label="Sections"></nav></header>
+<header class="header"><div class="masthead"><h1 class="doc-title"><a id="document-title" href="#/"></a></h1><div class="tools"><div class="theme-picker"><select id="theme" aria-label="Choose theme"><option value="paper">Paper</option><option value="midnight">Midnight</option><option value="grove">Grove</option><option value="ocean">Ocean</option><option value="contrast">High contrast</option></select></div><button class="menu-button" id="menu" aria-label="Open document navigation">☰</button></div></div><div class="primary-container"><nav id="primary" class="primary" aria-label="Sections"></nav></div></header>
 <div id="status" class="status" role="status">Loading your document…</div>
 <div class="layout" id="layout" hidden><aside class="sidebar"><nav id="secondary" aria-label="Pages"></nav></aside><main class="main" id="content" tabindex="-1"><div class="article-wrap"><h1 class="page-title" id="page-title"></h1><details class="mobile-toc" id="mobile-toc"><summary>On this page</summary><nav aria-label="On this page"></nav></details><article class="article" id="article"></article><nav class="pager" id="pager" aria-label="Previous and next pages"></nav></div></main><aside class="toc" id="toc"><p class="eyebrow">On this page</p><nav aria-label="On this page"></nav></aside></div>
 <dialog class="drawer" id="drawer"><button id="close-menu" aria-label="Close navigation">✕</button><h2>Explore document</h2><nav id="mobile-nav" aria-label="Document navigation"></nav></dialog>
