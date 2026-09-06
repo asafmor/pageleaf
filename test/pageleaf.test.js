@@ -90,6 +90,14 @@ test('the generated template constrains header content to the site frame', async
   assert.match(template, /\.masthead,\.primary\{max-width:1600px;margin:auto\}/);
 });
 
+test('the generated header uses the linked document H1 as its only brand', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  assert.match(template, /<h1 class="doc-title"><a id="document-title" href="#\/"><\/a><\/h1>/);
+  assert.match(template, /const homePage=this\.model\.pages\[0\];\$\('document-title'\)\.textContent=this\.model\.title;\$\('document-title'\)\.href=homePage\.route;/);
+  assert.doesNotMatch(template, /Pageleaf home|pageleaf<\/a>|class="leaf"|flaticon\.com/);
+});
+
 test('CLI parsing validates positionals, themes, and empty titles', () => {
   assert.equal(parseCommandLine(['guide.md', '--theme', 'grove']).values.theme, 'grove');
   assert.throws(() => parseCommandLine([]), UsageError);
