@@ -71,6 +71,19 @@ test('embedding selects a theme and protects the script boundary', () => {
   assert.doesNotMatch(html, />old<\/script>/);
 });
 
+test('the generated template uses theme-local colors for navigation scrollbars at every viewport width', async () => {
+  const template = await readFile(templatePath, 'utf8');
+
+  for (const theme of ['paper', 'midnight', 'grove', 'ocean', 'contrast']) {
+    const selector = theme === 'paper' ? ':root' : `[data-theme="${theme}"]`;
+    assert.match(template, new RegExp(`${selector.replace(/[\\[\\]]/g, '\\$&')}\\{[^}]*--bg:[^;]+;[^}]*--nav-scroll-track:[^;]+;[^}]*--nav-scroll-thumb:[^;]+;`));
+  }
+  assert.match(template, /\.primary\{[^}]*scrollbar-color:var\(--nav-scroll-thumb\) var\(--nav-scroll-track\)[^}]*\}/);
+  assert.match(template, /\.primary::-webkit-scrollbar-track\{background:var\(--nav-scroll-track\)\}/);
+  assert.match(template, /\.primary::-webkit-scrollbar-thumb\{background:var\(--nav-scroll-thumb\)[^}]*border:2px solid var\(--nav-scroll-track\)\}/);
+  assert.doesNotMatch(template, /@media\(min-width:701px\)\{\.primary\{scrollbar-color/);
+});
+
 test('the generated template constrains header content to the site frame', async () => {
   const template = await readFile(templatePath, 'utf8');
 
