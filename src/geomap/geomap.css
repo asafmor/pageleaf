@@ -1,0 +1,86 @@
+.geomap {
+  margin: 28px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.geomap-map {
+  height: 420px;
+  width: 100%;
+  scroll-margin-top: calc(var(--header) + 16px);
+  /* Leaflet's panes must stay below the document's sticky navigation. */
+  isolation: isolate;
+  z-index: 0;
+  background: var(--soft);
+  color: #222;
+}
+
+.geomap-toolbar { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.geomap-toolbar:empty { display: none; }
+.geomap-layers { font-size: 14px; }
+.geomap summary { cursor: pointer; font-weight: 600; }
+.geomap-layers fieldset { border: 0; padding: 8px 0 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.geomap-layers label { display: inline-flex; gap: 8px; align-items: center; min-height: 32px; cursor: pointer; }
+.geomap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.geomap-layer-swatch { width: 22px; border-top: 3px solid; }
+.geomap-data > summary { padding: 12px 16px; border-top: 1px solid var(--line); }
+.geomap-table-wrapper { width: 100%; overflow-x: auto; }
+.article .geomap-table { display: table; margin: 0; width: 100%; font-size: 13px; }
+.article .geomap-table th, .article .geomap-table td { padding: 10px 12px; vertical-align: top; overflow-wrap: anywhere; }
+.article .geomap-table th { text-transform: none; letter-spacing: normal; }
+.geomap-table td { min-width: 100px; }
+.geomap-table td:first-child { min-width: 140px; }
+.geomap-table tbody tr { cursor: pointer; }
+.geomap-table tr.is-hovered, .geomap-table tr:hover { background: var(--soft); }
+.geomap-table tr.is-selected { background: var(--soft); box-shadow: inset 4px 0 var(--accent); }
+.geomap-layer-state { display: block; font-size: 11px; font-style: italic; color: var(--muted); }
+.geomap .geomap-feature-button { border: 0; background: transparent; padding: 0; border-radius: 0; text-align: left; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.geomap .geomap-feature-button[aria-current] { font-weight: 700; }
+.article .geomap-table .map-link-cell, .article .geomap-table .map-link-header {
+  width: 1%;
+  min-width: 0;
+  white-space: nowrap;
+  text-align: center;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.map-link-cell a { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; min-height: 24px; text-decoration: none; }
+.geomap-table-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; font-size: 13px; }
+.geomap-table-controls input { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); padding: 8px 10px; min-width: 0; max-width: 100%; border-radius: var(--radius); }
+.geomap-filter-status { color: var(--muted); }
+.geomap-message, .geomap-error { padding: 12px 16px; color: var(--muted); font-size: 14px; }
+.geomap-error { border: 1px solid var(--line); border-radius: var(--radius); }
+.geomap .geomap-marker {
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #28614b;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font: bold 20px/1 Arial, sans-serif;
+  box-shadow: 0 1px 5px #0009;
+}
+.geomap .geomap-marker.is-hovered { outline: 3px solid #222; outline-offset: 2px; }
+.geomap .geomap-marker.is-selected { outline: 4px double #222; outline-offset: 2px; background: #153c2d; }
+.geomap .leaflet-container :focus-visible { outline: 3px solid #1769aa; outline-offset: 3px; }
+.geomap-popup { font: 14px/1.5 Arial, sans-serif; color: #222; overflow-wrap: anywhere; max-height: 240px; overflow-y: auto; }
+.geomap-popup strong { display: block; margin-bottom: 6px; }
+.article .geomap-popup p { margin: 6px 0; }
+.geomap-popup a { color: #1769aa; }
+.geomap-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .geomap-map { height: 380px; }
+  .geomap-layers fieldset { flex-direction: column; gap: 4px; }
+  .geomap-table-controls { align-items: stretch; flex-direction: column; }
+}
+
+@media print {
+  .geomap-map, .geomap-toolbar, .geomap-table-controls { display: none; }
+  .geomap { overflow: visible; }
+  .geomap-table-wrapper { overflow: visible; }
+  .geomap-data > summary { list-style: none; }
+  .geomap-table tr { break-inside: avoid; }
+}
