@@ -1,6 +1,6 @@
 {
   "name": "pageleaf",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Turn text files into a navigable, single-file documentation site.",
   "type": "module",
   "bin": {
