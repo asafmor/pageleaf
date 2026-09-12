@@ -36,6 +36,7 @@
 /* Standard scrollbar properties override the custom parts unless both are auto. */
 @supports selector(::-webkit-scrollbar){.primary{scrollbar-width:auto;scrollbar-color:auto}.primary::-webkit-scrollbar-button{display:none;width:0;height:0}}
 </style>
+<link rel="stylesheet" href="src/geomap/geomap.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -805,6 +806,7 @@ Obtain a fresh local route report within **24–48 h of hiking**, and check fore
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+<script src="dist/geomap.js"></script>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -862,6 +864,7 @@ class MarkdownRenderer {
 }
 // Extension point: add future transformations here. Navigation and TOC are core UI.
 const contentEnhancements=[];
+let geomaps;
 function enhanceContent(article){for(const enhance of contentEnhancements)enhance(article);}
 class HashRouter {
  constructor(model,onRoute){this.model=model;this.onRoute=onRoute;this.positions=new Map();this.current=null;this.lastPages=new Map();}
@@ -883,7 +886,7 @@ class DocumentViewer {
  start(){
   const homePage=this.model.pages[0];$('document-title').textContent=this.model.title;$('document-title').href=homePage.route;const sidebarLayout=document.documentElement.dataset.layout==='sidebar';$('primary').hidden=sidebarLayout;document.documentElement.classList.toggle('sidebar-layout',sidebarLayout);$('secondary').setAttribute('aria-label',sidebarLayout?'Document navigation':'Pages');if('ResizeObserver'in window)new ResizeObserver(entries=>document.documentElement.style.setProperty('--header',entries[0].target.offsetHeight+'px')).observe(document.querySelector('.header'));$('status').hidden=true;$('layout').hidden=false;
   $('menu').onclick=()=>$('drawer').showModal();$('close-menu').onclick=()=>$('drawer').close();$('drawer').addEventListener('click',e=>{if(e.target===$('drawer')){const r=$('drawer').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('drawer').close();}if(e.target.closest('a'))$('drawer').close();});
-  window.addEventListener('beforeprint',()=>{$('print-content').innerHTML=`<h1>${escapeHTML(this.model.title)}</h1>`+this.model.sections.map(s=>`<section><h2>${escapeHTML(s.title)}</h2>${s.pages.map(p=>`<article><h3>${escapeHTML(p.title)}</h3>${this.renderer.render(p)}</article>`).join('')}</section>`).join('');});window.addEventListener('afterprint',()=>{$('print-content').replaceChildren();});this.router.start();
+  window.addEventListener('beforeprint',()=>{$('print-content').innerHTML=`<h1>${escapeHTML(this.model.title)}</h1>`+this.model.sections.map(s=>`<section><h2>${escapeHTML(s.title)}</h2>${s.pages.map(p=>`<article><h3>${escapeHTML(p.title)}</h3>${this.renderer.render(p)}</article>`).join('')}</section>`).join('');geomaps?.enhance($('print-content'),{interactive:false});});window.addEventListener('afterprint',()=>{geomaps?.dispose($('print-content'));$('print-content').replaceChildren();});this.router.start();
  }
  render(page,anchor,initial){
   const s=page.section;document.title=page.title+' · '+this.model.title+' | Pageleaf';
@@ -891,7 +894,7 @@ class DocumentViewer {
   const sidebarLayout=document.documentElement.dataset.layout==='sidebar';$('secondary').innerHTML=sidebarLayout?this.model.sections.map(section=>`<section class="sidebar-group"><h3 class="sidebar-group-title">${escapeHTML(section.title)}</h3>${section.pages.length>1?section.pages.map(p=>this.link(p,p.title,page)).join(''):this.link(section.pages[0],section.pages[0].kind==='overview'?'Overview':section.pages[0].title,page)}</section>`).join(''):s.pages.map(p=>this.link(p,p.title,page)).join('');
   $('mobile-nav').innerHTML=this.model.sections.map(section=>`<h3>${escapeHTML(section.title)}</h3>${section.pages.map(p=>this.link(p,p.title,page)).join('')}`).join('');
   $('page-title').textContent=page.title;
-  $('article').innerHTML=this.renderer.render(page);enhanceContent($('article'));
+  geomaps?.dispose($('article'));$('article').innerHTML=this.renderer.render(page);enhanceContent($('article'));
   const toc=page.toc.map(h=>`<a href="${page.route}/${h.id}" data-level="${h.level}">${escapeHTML(h.title)}</a>`).join('')||`<a href="${page.route}">${escapeHTML(page.title)}</a>`;$('toc').querySelector('nav').innerHTML=toc;$('mobile-toc').querySelector('nav').innerHTML=toc;$('toc').style.visibility=toc?'visible':'hidden';$('mobile-toc').hidden=!toc;$('mobile-toc').style.display=toc?'':'none';
   const index=this.model.pages.indexOf(page);$('pager').innerHTML=[index>0?`<a href="${this.model.pages[index-1].route}"><small>← Previous</small>${escapeHTML(this.model.pages[index-1].title)}</a>`:'',index<this.model.pages.length-1?`<a href="${this.model.pages[index+1].route}"><small>Next →</small>${escapeHTML(this.model.pages[index+1].title)}</a>`:''].join('');
   this.observer?.disconnect();if('IntersectionObserver'in window){this.observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting);if(visible.length)this.markHeading(visible[0].target.id.slice(8));},{rootMargin:'-140px 0px -55% 0px'});page.toc.forEach(h=>this.observer.observe(document.getElementById('heading-'+h.id)));}this.markHeading(anchor||page.toc[0]?.id);
@@ -901,7 +904,7 @@ class DocumentViewer {
 }
 try{const theme=localStorage.getItem('pageleaf-theme');if(['paper','midnight','grove','ocean','contrast'].includes(theme))document.documentElement.dataset.theme=theme;}catch{}
 $('theme').value=document.documentElement.dataset.theme;$('theme').onchange=e=>{document.documentElement.dataset.theme=e.target.value;try{localStorage.setItem('pageleaf-theme',e.target.value);}catch{}};
-if(!window.markdownit){$('status').textContent='The Markdown library could not load. Connect to the internet and reload this file to try again.';}else{try{const md=window.markdownit({html:false,linkify:true,typographer:true});const model=new DocumentParser(md).parse(readMarkdown());new DocumentViewer(model,new MarkdownRenderer(md,model)).start();}catch(error){$('status').hidden=false;$('status').textContent='This document could not be opened: '+error.message;console.error(error);}}
+if(!window.markdownit){$('status').textContent='The Markdown library could not load. Connect to the internet and reload this file to try again.';}else{try{const md=window.markdownit({html:false,linkify:true,typographer:true});geomaps=PageleafGeoMap.install(md);contentEnhancements.push(article=>geomaps.enhance(article));const model=new DocumentParser(md).parse(readMarkdown());new DocumentViewer(model,new MarkdownRenderer(md,model)).start();}catch(error){$('status').hidden=false;$('status').textContent='This document could not be opened: '+error.message;console.error(error);}}
 </script>
 </body>
 </html>
